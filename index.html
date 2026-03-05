@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>a21 Partnerships Platform</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎪</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // ============================================================
+    // ICONS
+    // ============================================================
+    const Icons = {
+      Home: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>),
+      Clipboard: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>),
+      Brain: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>),
+      FileText: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>),
+      Grid: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>),
+      Package: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>),
+      Book: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>),
+      Settings: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>),
+      Plus: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>),
+      ChevronRight: () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>),
+      ArrowLeft: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>),
+      Zap: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>),
+      Mail: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>),
+      Copy: () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>),
+      Check: () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>),
+      Sparkles: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/></svg>),
+      HelpCircle: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>),
+      X: () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
+    };
+
+    // ============================================================
+    // DESIGN TOKENS
+    // ============================================================
+    const colors = {
+      primary: "#29286A",
+      accent: "#E07BAF",
+      accentHover: "#d4699f",
+      success: "#10B981",
+      warning: "#F59E0B",
+      danger: "#EF4444",
+      bg: "#FAFAFA",
+      bgCard: "#FFFFFF",
+      bgSidebar: "#29286A",
+      text: "#1F2937",
+      textMuted: "#6B7280",
+      textLight: "#9CA3AF",
+      border: "#E5E7EB",
+      borderLight: "#F3F4F6",
+    };
+
+    // ============================================================
+    // PROPERTY DATABASE
+    // ============================================================
+    const PROPERTIES = {
+      sobewff: {
+        id: "sobewff",
+        name: "South Beach Wine & Food Festival",
+        shortName: "SOBEWFF",
+        tier: 1,
+        tierName: "National Flagship",
+        dates: "February 19–22, 2026",
+        market: "Miami Beach, FL",
+        attendees: "65,000+",
+        format: "4-day multi-event festival",
+        emoji: "🌊",
+        color: "#E91E8C",
+        tagline: "The nation's most celebrated food & wine festival — 25 years strong",
+        audience: "44% male / 56% female | Age peak 36–45 | 67% HHI $100K+ | 37% over $175K",
+        scale: "100+ events, 500+ chefs & talent, 65,000+ attendees",
+        media: "9.7B PR impressions | 833M advertising | 470M social",
+        presented: "Food Network & Capital One presenting",
+        beneficiary: "FIU Chaplin School — $45M+ raised",
+        inventory: "Platinum $100K+ | Diamond $75–99K | Gold $50–74K | Silver $25–49K | Bronze $15–24K",
+        keyInventory: ["Festival-wide category exclusivity", "Grand Tasting Village footprint", "Gift bag insertion (~17,000)", "Director's VIP Happy Hour", "Festival Guide inclusion"],
+        existingPartners: ["Capital One", "Southern Glazer's", "LaCroix", "Goya", "Publix"],
+        whyHere: "The Super Bowl of food festivals. Nothing else delivers this scale, this media reach, and this South Beach energy.",
+        bestFitCategories: ["Financial services", "Auto", "CPG/food & beverage", "Travel & hospitality"],
+      },
+      nycwff: {
+        id: "nycwff",
+        name: "NYC Wine & Food Festival",
+        shortName: "NYCWFF",
+        tier: 1,
+        tierName: "National Flagship",
+        dates: "October 15–19, 2025",
+        market: "New York City",
+        attendees: "35,000+",
+        format: "5-day multi-event festival",
+        emoji: "🗽",
+        color: "#1565C0",
+        tagline: "NYC's premier culinary festival in the heart of the Seaport",
+        audience: "Affluent NYC metro + national draw | 20,000+ at Grand Tasting alone",
+        scale: "50+ events including walk-around tastings, intimate dinners, FoodieCon",
+        media: "National Food Network platform, extensive NYC media footprint",
+        presented: "Food Network & Invesco QQQ presenting",
+        beneficiary: "No Kid Hungry & James Beard Foundation",
+        inventory: "Custom packages — contact for pricing",
+        keyInventory: ["Grand Tasting presenting/title", "Signature event sponsorship", "FoodieCon integration", "Custom brand activation"],
+        existingPartners: ["Invesco QQQ", "Southern Glazer's"],
+        whyHere: "Same Food Network DNA as SOBEWFF, different city energy. World-class backdrop in the media capital.",
+        bestFitCategories: ["Financial services", "Auto", "CPG", "Travel", "Tech", "Fashion"],
+      },
+      pebblebeach: {
+        id: "pebblebeach",
+        name: "Pebble Beach Food & Wine",
+        shortName: "Pebble Beach F&W",
+        tier: 2,
+        tierName: "Premium Destination",
+        dates: "April 9–12, 2026",
+        market: "Pebble Beach, CA",
+        attendees: "~8,500",
+        format: "4-day destination festival",
+        emoji: "⛳",
+        color: "#2E7D32",
+        tagline: "Where golf, wine, and world-class cuisine meet",
+        audience: "Ultra-premium wine connoisseurs | HNW destination travelers | $3K–$10K packages",
+        scale: "35+ events including Tasting Pavilion, intimate dinners, golf tournament",
+        media: "Wine & spirits trade press, luxury lifestyle media",
+        presented: "Pebble Beach Company Foundation",
+        beneficiary: "Pebble Beach Company Foundation — $20M+ to Monterey County youth",
+        inventory: "Custom packages — premium pricing",
+        keyInventory: ["Tasting Pavilion presenting", "Golf tournament integration", "Intimate dinner hosting", "Wine seminar presenting"],
+        existingPartners: ["HexClad", "James Beard Foundation"],
+        whyHere: "The most prestigious wine-focused festival in the country.",
+        bestFitCategories: ["Ultra-premium spirits & wine", "Luxury auto", "Financial/wealth management"],
+      },
+      bahamas: {
+        id: "bahamas",
+        name: "Bahamas Culinary & Arts Festival",
+        shortName: "Bahamas CAF",
+        tier: 2,
+        tierName: "Premium Destination",
+        dates: "October 22–26, 2025",
+        market: "Nassau, Bahamas — Baha Mar Resort",
+        attendees: "Premium destination format",
+        format: "5-day premium destination festival",
+        emoji: "🏝️",
+        color: "#00838F",
+        tagline: "The Caribbean's most spectacular culinary and arts event",
+        audience: "Affluent Caribbean destination travelers | International luxury resort guests",
+        scale: "5 days | Lenny Kravitz welcome concert | Celebrity chef roster | FUZE Art Fair",
+        media: "Caribbean luxury travel press, international food media",
+        presented: "Baha Mar Resort",
+        beneficiary: "Bahamas cultural development",
+        inventory: "Custom partnership packages",
+        keyInventory: ["Music event presenting", "FUZE Art Fair integration", "Celebrity chef dinner hosting"],
+        existingPartners: ["ScotiaBank", "Amex", "Macallan", "Fiji"],
+        whyHere: "Nothing combines music, art, celebrity chefs, and Caribbean luxury at this level.",
+        bestFitCategories: ["Luxury spirits", "Financial/banking", "Premium water/beverage"],
+      },
+      atlantafw: {
+        id: "atlantafw",
+        name: "Atlanta Food & Wine Festival",
+        shortName: "Atlanta F&W",
+        tier: 3,
+        tierName: "Cultural & Regional",
+        dates: "Annual — Spring",
+        market: "Atlanta, GA",
+        attendees: "15,000",
+        format: "Multi-day festival with tasting tents, dinners",
+        emoji: "🍑",
+        color: "#AD1457",
+        tagline: "Great party energy, celebrity chefs, and Southern culinary pride",
+        audience: "Atlanta food enthusiasts, Southern culinary fans, 26–45 affluent consumers",
+        scale: "Grand tasting tents, intimate dinners, Whiskey & Fire activation",
+        media: "Atlanta media market, regional food press",
+        presented: "InvescoQQQ presenting",
+        beneficiary: "TBD",
+        inventory: "Custom partnership packages",
+        keyInventory: ["Tasting tent presenting", "Whiskey & Fire activation", "Celebrity chef demo presenting"],
+        existingPartners: ["InvescoQQQ", "Publix", "LaCroix", "Goya"],
+        whyHere: "Atlanta is one of the fastest-growing, most culturally vibrant markets in the country.",
+        bestFitCategories: ["Financial/investment", "Grocery/CPG", "Beverage", "Auto"],
+      },
+      tours: {
+        id: "tours",
+        name: "a21 Tours (Heritage Fire / Whiskies)",
+        shortName: "a21 Tours",
+        tier: 4,
+        tierName: "National Tour",
+        dates: "Year-round — 13 stops",
+        market: "13 markets: CA, CO, NC, SC, GA, FL + London",
+        attendees: "18,000+ total",
+        format: "Heritage Fire, Whiskies of the World, Whiskey & Fire",
+        emoji: "🔥",
+        color: "#E64A19",
+        tagline: "1 tour. 3 epic experiences. 13 stops. National reach.",
+        audience: "26–45 | $170K average HHI | 50/50 male/female | Diverse and affluent",
+        scale: "13 markets including San Diego, Asheville, Napa, Atlanta, Miami",
+        media: "350M+ overall impressions | 80M Facebook/Instagram",
+        presented: "a21 / EventZero sustainability partner",
+        beneficiary: "EventZero environmental nonprofit",
+        inventory: "Tour Presenting $225K | Event Presenting from $35K | 10x10 from $5K/event",
+        keyInventory: ["Tour Presenting Partner $225K", "Event Presenting from $35K/stop", "10x10 footprint from $5K/event"],
+        existingPartners: ["BMW", "Regions Bank", "LaCroix"],
+        whyHere: "Multi-market national reach that no single festival can match.",
+        bestFitCategories: ["Spirits & whiskey", "Auto", "Banking/financial"],
+      },
+    };
+
+    const TIERS = [
+      { id: 1, name: "National Flagships", desc: "Maximum scale, Food Network presented" },
+      { id: 2, name: "Premium Destination", desc: "Ultra-premium audience, destination value" },
+      { id: 3, name: "Cultural & Regional", desc: "Market-specific, targeted reach" },
+      { id: 4, name: "National Tour", desc: "Multi-market reach, touring format" },
+    ];
+
+    // ============================================================
+    // QUALIFIER FIELDS
+    // ============================================================
+    const QUALIFIER_FIELDS = [
+      { section: "Brand & Product", fields: [
+        { id: "company", label: "Company / Brand Name", type: "text", placeholder: "e.g. Macallan, Chase, Cadillac", required: true },
+        { id: "product", label: "Product or Service", type: "text", placeholder: "e.g. single malt whisky" },
+        { id: "category", label: "Brand Category", type: "select", options: ["Spirits & Wine", "Beer/Hard Beverage", "Financial Services", "Automotive", "CPG / Food & Beverage", "Travel & Hospitality", "Technology", "Retail", "Healthcare", "Fashion / Lifestyle", "Other"] },
+        { id: "stage", label: "Brand/Product Stage", type: "select", options: ["Established brand, maintaining presence", "Established brand, entering new market", "New product launch", "First-time festival sponsor"] },
+      ]},
+      { section: "Budget & Timeline", fields: [
+        { id: "budget", label: "Partnership Budget Range", type: "select", options: ["Under $15,000", "$15,000–$25,000", "$25,000–$50,000", "$50,000–$100,000", "$100,000–$250,000", "$250,000+", "Flexible / TBD"] },
+        { id: "timeline", label: "Timeline / Urgency", type: "select", options: ["This cycle / immediate", "Planning for next season", "Exploratory — no set timeline", "Multi-year deal interest"] },
+        { id: "decisionMaker", label: "Decision Makers", type: "text", placeholder: "e.g. CMO approval needed" },
+      ]},
+      { section: "Goals & KPIs", fields: [
+        { id: "primaryKPI", label: "Primary Success Metric", type: "select", options: ["Brand awareness / impressions", "Product sampling / trial", "Sales / revenue generation", "Lead generation / data capture", "Trade / industry relationships", "Content creation / social media", "VIP / hospitality experiences"] },
+        { id: "secondaryKPI", label: "Secondary Goal", type: "text", placeholder: "e.g. also want trade engagement" },
+        { id: "perfectPartnership", label: "What Does Success Look Like?", type: "textarea", placeholder: "Quote them if possible" },
+      ]},
+      { section: "Audience Priorities", fields: [
+        { id: "audienceType", label: "Consumer vs. Trade Priority", type: "select", options: ["Consumer only", "Trade / industry only", "Both — consumer primary", "Both — trade primary"] },
+        { id: "geography", label: "Geographic Priority", type: "select", options: ["National reach", "Southeast region", "Northeast region", "West Coast", "Caribbean / International", "Multi-market / touring"] },
+        { id: "demographic", label: "Target Demographic", type: "text", placeholder: "e.g. HNW 35–55" },
+      ]},
+    ];
+
+    // ============================================================
+    // PLAYBOOKS DATA
+    // ============================================================
+    const PLAYBOOKS = {
+      ethos: {
+        title: "a21 Ethos & Voice",
+        icon: "💡",
+        color: colors.accent,
+        cards: [
+          { icon: "🎯", title: "What a21 Creates", content: "We create experience. We create connection — brand to an audience that consumes, earns, and explores. Premium environments, world-class talent, and a genuine sense of place." },
+          { icon: "🏆", title: "What Great Activation Looks Like", content: "Specific to the brand's world, not generic. Uses the festival's unique assets in ways that couldn't happen anywhere else. Tells a story. Creates a moment worth remembering." },
+          { icon: "🚫", title: "What Lazy Activation Looks Like", content: "A booth with a banner. Sampling without a story. Logo on a sign with no integration. a21 doesn't sell presence — we sell participation." },
+          { icon: "💬", title: "How We Sound in Proposals", content: "Confident, not arrogant. Specific, not generic. Lead with the brand's world before talking about ours. We're strategic partners, not order-takers." },
+        ]
+      },
+      spirits: {
+        title: "Spirits & Wine Playbook",
+        icon: "🥃",
+        color: "#8B4513",
+        cards: [
+          { icon: "⚠️", title: "Distribution Requirement", content: "All wine and spirits brands must distribute through Southern Glazer's Wine & Spirits. This is non-negotiable for sampling." },
+          { icon: "🎯", title: "What Spirits Brands Want", content: "Premium positioning, not volume. Education and storytelling. Access to tastemakers and trade. Content for social." },
+          { icon: "💰", title: "Typical Entry Points", content: "Sampling table: $2,500–$5,000. 10x10 footprint: $5,000–$10,000. Event presenting: $35,000–$75,000. Festival presenting: $100,000+." },
+        ]
+      },
+      financial: {
+        title: "Financial Services Playbook",
+        icon: "💳",
+        color: "#059669",
+        cards: [
+          { icon: "🎯", title: "What Financial Brands Want", content: "Affluent cardholder engagement. Premium lifestyle association. Lead generation for wealth management. B2B visibility with business owners." },
+          { icon: "💰", title: "Typical Packages", content: "Festival presenting: $100,000–$500,000. VIP lounge: $50,000–$100,000. Cardholder exclusive access: $25,000–$50,000." },
+          { icon: "✨", title: "Activation Ideas", content: "Cardholder early access/priority entry. VIP lounge with dedicated experiences. Business owner networking events." },
+        ]
+      },
+    };
+
+    // ============================================================
+    // SAMPLE DEALS
+    // ============================================================
+    const SAMPLE_DEALS = [
+      { id: 1, company: "Macallan", property: "Pebble Beach F&W", stage: "Proposal Sent", value: 75000, seller: "Anthony G." },
+      { id: 2, company: "Chase Sapphire", property: "SOBEWFF", stage: "Negotiation", value: 150000, seller: "Darrin C." },
+      { id: 3, company: "BMW", property: "Heritage Fire Tour", stage: "Qualified", value: 225000, seller: "Anthony G." },
+      { id: 4, company: "Regions Bank", property: "Atlanta F&W", stage: "Closed Won", value: 50000, seller: "Darrin C." },
+      { id: 5, company: "Fiji Water", property: "Bahamas CAF", stage: "Proposal Sent", value: 40000, seller: "Anthony G." },
+      { id: 6, company: "Lexus", property: "Palm Beach F&W", stage: "Lead", value: 100000, seller: "Darrin C." },
+    ];
+
+    // ============================================================
+    // STYLES
+    // ============================================================
+    const styles = {
+      app: { display: "flex", minHeight: "100vh", background: colors.bg, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+      sidebar: { width: "240px", background: colors.bgSidebar, color: "#fff", display: "flex", flexDirection: "column", position: "fixed", height: "100vh", zIndex: 100 },
+      sidebarLogo: { padding: "24px 20px", borderBottom: "1px solid rgba(255,255,255,0.1)" },
+      logoText: { fontSize: "24px", fontWeight: "800", background: `linear-gradient(135deg, ${colors.accent}, #fff)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" },
+      logoSubtext: { fontSize: "11px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "4px" },
+      nav: { flex: 1, padding: "16px 12px", overflowY: "auto" },
+      navSection: { marginBottom: "24px" },
+      navLabel: { fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", padding: "0 8px", marginBottom: "8px" },
+      navItem: (active) => ({ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "8px", cursor: "pointer", fontSize: "14px", fontWeight: active ? "600" : "400", background: active ? "rgba(224,123,175,0.15)" : "transparent", color: active ? colors.accent : "rgba(255,255,255,0.7)", marginBottom: "2px" }),
+      main: { marginLeft: "240px", flex: 1, minHeight: "100vh" },
+      header: { background: colors.bgCard, borderBottom: `1px solid ${colors.border}`, padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 },
+      headerTitle: { fontSize: "20px", fontWeight: "600", color: colors.text },
+      headerActions: { display: "flex", alignItems: "center", gap: "12px" },
+      content: { padding: "32px", maxWidth: "1400px" },
+      card: { background: colors.bgCard, borderRadius: "12px", border: `1px solid ${colors.border}`, padding: "24px", marginBottom: "24px" },
+      cardHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" },
+      cardTitle: { fontSize: "16px", fontWeight: "600", color: colors.text },
+      button: (variant = "primary") => ({ display: "inline-flex", alignItems: "center", gap: "8px", padding: variant === "sm" ? "8px 14px" : "12px 20px", borderRadius: "8px", border: variant === "secondary" ? `1px solid ${colors.border}` : "none", fontSize: variant === "sm" ? "13px" : "14px", fontWeight: "600", cursor: "pointer", background: variant === "primary" || variant === "sm" ? colors.accent : colors.bgCard, color: variant === "primary" || variant === "sm" ? "#fff" : colors.text }),
+      input: { width: "100%", padding: "10px 14px", borderRadius: "8px", border: `1px solid ${colors.border}`, fontSize: "14px", color: colors.text, background: colors.bgCard, outline: "none" },
+      select: { width: "100%", padding: "10px 14px", borderRadius: "8px", border: `1px solid ${colors.border}`, fontSize: "14px", color: colors.text, background: colors.bgCard, cursor: "pointer" },
+      textarea: { width: "100%", padding: "10px 14px", borderRadius: "8px", border: `1px solid ${colors.border}`, fontSize: "14px", color: colors.text, background: colors.bgCard, resize: "vertical", minHeight: "80px", fontFamily: "inherit" },
+      label: { display: "block", fontSize: "13px", fontWeight: "500", color: colors.textMuted, marginBottom: "6px" },
+      badge: (color = colors.accent) => ({ display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: "500", background: `${color}15`, color: color }),
+      metric: { textAlign: "center", padding: "20px" },
+      metricValue: { fontSize: "32px", fontWeight: "700", color: colors.primary, marginBottom: "4px" },
+      metricLabel: { fontSize: "13px", color: colors.textMuted },
+      grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" },
+      grid3: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" },
+      grid4: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" },
+    };
+
+    // ============================================================
+    // MAIN COMPONENT
+    // ============================================================
+    function A21Platform() {
+      const [currentPage, setCurrentPage] = useState("dashboard");
+      const [currentSubPage, setCurrentSubPage] = useState(null);
+      const [showOnboarding, setShowOnboarding] = useState(true);
+      const [qualifiers, setQualifiers] = useState([]);
+      const [qualifierData, setQualifierData] = useState({});
+      const [selectedPropertyId, setSelectedPropertyId] = useState("");
+      const [selectedProperty, setSelectedProperty] = useState(null);
+      const [selectedPlaybook, setSelectedPlaybook] = useState("ethos");
+      const [propertyFilter, setPropertyFilter] = useState("all");
+      const [isGenerating, setIsGenerating] = useState(false);
+      const [strategyOutput, setStrategyOutput] = useState("");
+      const [proposalOutput, setProposalOutput] = useState("");
+      const [emailOutput, setEmailOutput] = useState("");
+
+      const navigate = (page, subPage = null) => {
+        setCurrentPage(page);
+        setCurrentSubPage(subPage);
+        if (page === "qualifier" && subPage === "new") {
+          setQualifierData({});
+          setSelectedPropertyId("");
+          setStrategyOutput("");
+          setProposalOutput("");
+        }
+      };
+
+      const handleQualifierChange = (id, value) => {
+        setQualifierData(prev => ({ ...prev, [id]: value }));
+      };
+
+      const saveQualifier = () => {
+        const newQualifier = { id: Date.now(), ...qualifierData, propertyId: selectedPropertyId, createdAt: new Date().toISOString() };
+        setQualifiers(prev => [newQualifier, ...prev]);
+        return newQualifier;
+      };
+
+      // ============================================================
+      // TEMPLATE-BASED STRATEGY ENGINE
+      // ============================================================
+      const ACTIVATION_TEMPLATES = {
+        "Spirits & Wine": [
+          "**Signature Tasting Experience**: Create an exclusive tasting lounge with guided tastings led by your brand ambassador.",
+          "**Cocktail Garden Activation**: Transform a section into an immersive cocktail garden with live mixologists.",
+          "**Master Class Series**: Host intimate seminars where guests learn the craft behind your product.",
+        ],
+        "Financial Services": [
+          "**Cardholder Lounge**: Create an exclusive retreat with premium seating and priority access.",
+          "**VIP Experience Presenting**: Sponsor the festival's most coveted experiences.",
+          "**Business Networking Reception**: Host an intimate gathering for entrepreneurs and executives.",
+        ],
+        "Automotive": [
+          "**Ride & Drive Experience**: Position vehicles at the festival entrance for test drives.",
+          "**Chef Shuttle Partnership**: Transport celebrity chefs in your vehicles for organic content moments.",
+          "**Luxury Lounge Display**: Showcase the latest models in a premium lounge environment.",
+        ],
+        "default": [
+          "**Brand Experience Zone**: Create an immersive activation space that brings your brand story to life.",
+          "**Presenting Partner**: Align with a signature festival event for naming rights and visibility.",
+          "**VIP Access Sponsor**: Own the VIP experience, connecting with the festival's most valuable attendees.",
+        ],
+      };
+
+      const getRecommendedProperties = () => {
+        const recommendations = [];
+        const budget = qualifierData.budget || "";
+        const category = qualifierData.category || "";
+        const geography = qualifierData.geography || "";
+
+        let targetTiers = [1, 2, 3, 4];
+        if (budget.includes("Under $15,000") || budget.includes("$15,000–$25,000")) targetTiers = [3, 4];
+        else if (budget.includes("$100,000") || budget.includes("$250,000")) targetTiers = [1, 2];
+
+        const geoMatches = {
+          "Southeast region": ["sobewff", "atlantafw"],
+          "Northeast region": ["nycwff"],
+          "West Coast": ["pebblebeach"],
+          "Caribbean / International": ["bahamas"],
+          "Multi-market / touring": ["tours"],
+          "National reach": ["sobewff", "nycwff", "tours"],
+        };
+
+        Object.values(PROPERTIES).forEach(prop => {
+          let score = 0;
+          let reasons = [];
+
+          if (targetTiers.includes(prop.tier)) { score += 2; reasons.push(`Budget aligns with ${prop.tierName}`); }
+          if (geography && geoMatches[geography]?.includes(prop.id)) { score += 3; reasons.push(`Matches ${geography}`); }
+          if (category && prop.bestFitCategories.some(c => c.toLowerCase().includes(category.split(" /")[0].toLowerCase()))) {
+            score += 3; reasons.push(`${category} is a best-fit category`);
+          }
+
+          if (score > 0) recommendations.push({ property: prop, score, reasons });
+        });
+
+        return recommendations.sort((a, b) => b.score - a.score).slice(0, 3);
+      };
+
+      const generateStrategy = () => {
+        setIsGenerating(true);
+        setStrategyOutput("");
+        setProposalOutput("");
+
+        setTimeout(() => {
+          const prop = selectedPropertyId ? PROPERTIES[selectedPropertyId] : null;
+          const recommendations = getRecommendedProperties();
+          const activations = ACTIVATION_TEMPLATES[qualifierData.category] || ACTIVATION_TEMPLATES["default"];
+          const company = qualifierData.company || "[BRAND]";
+
+          let strategy = `## Property Recommendation\n\n`;
+          if (prop) {
+            strategy += `**${prop.name}** is an excellent fit for ${company}.\n\n`;
+            strategy += `→ **Why here:** ${prop.whyHere}\n\n`;
+            strategy += `→ **Audience:** ${prop.audience}\n\n`;
+          } else if (recommendations.length > 0) {
+            strategy += `Based on your inputs, here are top recommendations for ${company}:\n\n`;
+            recommendations.forEach((rec, i) => {
+              strategy += `**${i + 1}. ${rec.property.name}** (${rec.property.tierName})\n`;
+              strategy += `→ ${rec.reasons.join(" • ")}\n`;
+              strategy += `→ ${rec.property.attendees} attendees | ${rec.property.market}\n\n`;
+            });
+          }
+
+          strategy += `## Activation Concepts\n\n`;
+          activations.forEach(a => { strategy += a.replace(/\[BRAND\]/g, company) + "\n\n"; });
+
+          const targetProp = prop || recommendations[0]?.property || PROPERTIES.sobewff;
+          strategy += `## Recommended Inventory\n\n`;
+          targetProp.keyInventory.slice(0, 4).forEach(item => { strategy += `→ **${item}**\n`; });
+          strategy += `\n**Pricing:** ${targetProp.inventory}\n`;
+
+          setStrategyOutput(strategy);
+
+          let proposal = `## Opening Hook\n\n`;
+          proposal += `"${company} isn't just about ${qualifierData.product || "what you sell"} — it's about [specific brand value]. ${targetProp.name} is where that story comes to life."\n\n`;
+          proposal += `## Key Benefits\n\n1. **Audience Quality**: ${targetProp.audience}\n2. **Scale & Reach**: ${targetProp.scale}\n\n`;
+          proposal += `## Subject Lines\n\n1. "${targetProp.shortName} + ${company} — quick thought"\n2. "Partnership opportunity at ${targetProp.shortName}"`;
+
+          setProposalOutput(proposal);
+          setIsGenerating(false);
+        }, 800);
+      };
+
+      const generateEmail = () => {
+        setIsGenerating(true);
+        setTimeout(() => {
+          const prop = selectedPropertyId ? PROPERTIES[selectedPropertyId] : PROPERTIES.sobewff;
+          const company = qualifierData.company || "[BRAND]";
+          setEmailOutput(`Subject: ${prop.shortName} + ${company} — quick thought\n\nHi [Contact],\n\nI've been thinking about ${company}'s positioning, and I wanted to share an idea.\n\n${prop.name} is coming up ${prop.dates}, and there's a natural fit I'd love to explore. The festival draws ${prop.attendees} — exactly the audience that ${company} resonates with.\n\nWould you have 20 minutes this week to walk through a specific activation concept?\n\nBest,\nAnthony Gordon`);
+          setIsGenerating(false);
+        }, 500);
+      };
+
+      const formatMarkdown = (text) => {
+        if (!text) return "";
+        return text
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/^## (.*$)/gm, `<h3 style="color:${colors.primary};margin:24px 0 12px;font-size:16px;font-weight:600;">$1</h3>`)
+          .replace(/^→ (.*$)/gm, `<div style="display:flex;gap:10px;margin:8px 0;"><span style="color:${colors.accent};">→</span><span>$1</span></div>`)
+          .replace(/^\d+\. (.*$)/gm, `<div style="margin:8px 0;">$1</div>`)
+          .replace(/\n\n/g, '<br/><br/>').replace(/\n/g, '<br/>');
+      };
+
+      // ============================================================
+      // RENDER: SIDEBAR
+      // ============================================================
+      const renderSidebar = () => (
+        <div style={styles.sidebar}>
+          <div style={styles.sidebarLogo}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: `linear-gradient(135deg, ${colors.accent}, #fff)`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "800", fontSize: "16px", color: colors.primary }}>a21</div>
+              <div>
+                <div style={styles.logoText}>Partnerships</div>
+                <div style={styles.logoSubtext}>Internal Platform</div>
+              </div>
+            </div>
+          </div>
+          
+          <nav style={styles.nav}>
+            <div style={styles.navSection}>
+              <div style={styles.navLabel}>Main</div>
+              <div style={styles.navItem(currentPage === "dashboard")} onClick={() => navigate("dashboard")}><Icons.Home /> Dashboard</div>
+              <div style={styles.navItem(currentPage === "qualifier")} onClick={() => navigate("qualifier")}><Icons.Clipboard /> Qualifier</div>
+              <div style={styles.navItem(currentPage === "strategy")} onClick={() => navigate("strategy")}><Icons.Brain /> Strategy Engine</div>
+              <div style={styles.navItem(currentPage === "proposals")} onClick={() => navigate("proposals")}><Icons.FileText /> Proposals</div>
+            </div>
+            <div style={styles.navSection}>
+              <div style={styles.navLabel}>Reference</div>
+              <div style={styles.navItem(currentPage === "properties")} onClick={() => navigate("properties")}><Icons.Grid /> Properties</div>
+              <div style={styles.navItem(currentPage === "playbooks")} onClick={() => navigate("playbooks")}><Icons.Book /> Playbooks</div>
+            </div>
+            <div style={styles.navSection}>
+              <div style={styles.navLabel}>System</div>
+              <div style={styles.navItem(currentPage === "admin")} onClick={() => navigate("admin")}><Icons.Settings /> Admin</div>
+            </div>
+          </nav>
+          
+          <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: colors.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "600", color: "#fff" }}>AG</div>
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: "500" }}>Anthony Gordon</div>
+                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)" }}>VP Partnerships</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      // ============================================================
+      // RENDER: DASHBOARD
+      // ============================================================
+      const renderDashboard = () => {
+        const dealsByStage = {
+          Lead: SAMPLE_DEALS.filter(d => d.stage === "Lead"),
+          Qualified: SAMPLE_DEALS.filter(d => d.stage === "Qualified"),
+          "Proposal Sent": SAMPLE_DEALS.filter(d => d.stage === "Proposal Sent"),
+          Negotiation: SAMPLE_DEALS.filter(d => d.stage === "Negotiation"),
+          "Closed Won": SAMPLE_DEALS.filter(d => d.stage === "Closed Won"),
+        };
+        const totalPipeline = SAMPLE_DEALS.filter(d => d.stage !== "Closed Won").reduce((sum, d) => sum + d.value, 0);
+        const closedValue = SAMPLE_DEALS.filter(d => d.stage === "Closed Won").reduce((sum, d) => sum + d.value, 0);
+
+        return (
+          <>
+            <div style={styles.header}>
+              <h1 style={styles.headerTitle}>Dashboard</h1>
+              <div style={styles.headerActions}>
+                <button style={styles.button("primary")} onClick={() => navigate("qualifier", "new")}><Icons.Plus /> New Qualifier</button>
+              </div>
+            </div>
+            
+            <div style={styles.content}>
+              <div style={{ ...styles.grid4, marginBottom: "24px" }}>
+                <div style={styles.card}><div style={styles.metric}><div style={styles.metricValue}>${(totalPipeline / 1000).toFixed(0)}K</div><div style={styles.metricLabel}>Active Pipeline</div></div></div>
+                <div style={styles.card}><div style={styles.metric}><div style={{ ...styles.metricValue, color: colors.success }}>${(closedValue / 1000).toFixed(0)}K</div><div style={styles.metricLabel}>Closed This Quarter</div></div></div>
+                <div style={styles.card}><div style={styles.metric}><div style={styles.metricValue}>{SAMPLE_DEALS.length}</div><div style={styles.metricLabel}>Active Deals</div></div></div>
+                <div style={styles.card}><div style={styles.metric}><div style={styles.metricValue}>{qualifiers.length}</div><div style={styles.metricLabel}>Qualifiers</div></div></div>
+              </div>
+
+              <div style={styles.card}>
+                <div style={styles.cardHeader}><h2 style={styles.cardTitle}>Pipeline by Stage</h2></div>
+                <div style={{ display: "flex", gap: "16px", overflowX: "auto", paddingBottom: "8px" }}>
+                  {Object.entries(dealsByStage).map(([stage, deals]) => (
+                    <div key={stage} style={{ flex: "0 0 200px", background: colors.bg, borderRadius: "10px", padding: "16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                        <span style={{ fontSize: "13px", fontWeight: "600", color: colors.text }}>{stage}</span>
+                        <span style={styles.badge(stage === "Closed Won" ? colors.success : colors.accent)}>{deals.length}</span>
+                      </div>
+                      {deals.map(deal => (
+                        <div key={deal.id} style={{ background: colors.bgCard, borderRadius: "8px", padding: "12px", marginBottom: "8px", border: `1px solid ${colors.border}` }}>
+                          <div style={{ fontSize: "14px", fontWeight: "500", color: colors.text, marginBottom: "4px" }}>{deal.company}</div>
+                          <div style={{ fontSize: "12px", color: colors.textMuted, marginBottom: "6px" }}>{deal.property}</div>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: "13px", fontWeight: "600", color: colors.primary }}>${(deal.value / 1000).toFixed(0)}K</span>
+                            <span style={{ fontSize: "11px", color: colors.textLight }}>{deal.seller}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={styles.grid2}>
+                <div style={styles.card}>
+                  <div style={styles.cardHeader}><h2 style={styles.cardTitle}>Quick Actions</h2></div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <button style={{ ...styles.button("secondary"), justifyContent: "flex-start", width: "100%" }} onClick={() => navigate("qualifier", "new")}><Icons.Clipboard /> Start New Qualifier</button>
+                    <button style={{ ...styles.button("secondary"), justifyContent: "flex-start", width: "100%" }} onClick={() => navigate("properties")}><Icons.Grid /> Browse Properties</button>
+                    <button style={{ ...styles.button("secondary"), justifyContent: "flex-start", width: "100%" }} onClick={() => navigate("playbooks")}><Icons.Book /> Review Playbooks</button>
+                  </div>
+                </div>
+                <div style={styles.card}>
+                  <div style={styles.cardHeader}><h2 style={styles.cardTitle}>Recent Activity</h2></div>
+                  <div style={{ fontSize: "13px", color: colors.textMuted }}>
+                    {qualifiers.length > 0 ? qualifiers.slice(0, 5).map((q, i) => (
+                      <div key={i} style={{ padding: "8px 0", borderBottom: i < 4 ? `1px solid ${colors.borderLight}` : "none" }}>
+                        <span style={{ fontWeight: "500", color: colors.text }}>{q.company || "New Lead"}</span>
+                        <span style={{ marginLeft: "8px", color: colors.textLight }}>Qualifier created</span>
+                      </div>
+                    )) : <div style={{ padding: "20px", textAlign: "center", color: colors.textLight }}>No recent activity</div>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      };
+
+      // ============================================================
+      // RENDER: QUALIFIER
+      // ============================================================
+      const renderQualifier = () => {
+        if (currentSubPage === "new" || currentSubPage === "edit") {
+          return (
+            <>
+              <div style={styles.header}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <button style={{ ...styles.button("secondary"), padding: "8px" }} onClick={() => navigate("qualifier")}><Icons.ArrowLeft /></button>
+                  <h1 style={styles.headerTitle}>New Qualifier</h1>
+                </div>
+                <div style={styles.headerActions}>
+                  <button style={styles.button("secondary")} onClick={() => { saveQualifier(); navigate("qualifier"); }}>Save Draft</button>
+                  <button style={styles.button("primary")} onClick={() => { saveQualifier(); navigate("strategy"); }} disabled={!qualifierData.company}><Icons.Zap /> Generate Strategy</button>
+                </div>
+              </div>
+              
+              <div style={styles.content}>
+                <div style={{ ...styles.card, borderColor: colors.accent, borderWidth: "2px" }}>
+                  <label style={{ ...styles.label, color: colors.accent, textTransform: "uppercase" }}>Target Property (optional)</label>
+                  <select value={selectedPropertyId} onChange={e => setSelectedPropertyId(e.target.value)} style={styles.select}>
+                    <option value="">🔍 Auto-recommend the best property fit</option>
+                    {Object.values(PROPERTIES).sort((a, b) => a.tier - b.tier).map(p => (
+                      <option key={p.id} value={p.id}>{p.emoji} {p.name} — {p.tierName}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {QUALIFIER_FIELDS.map(section => (
+                  <div key={section.section} style={styles.card}>
+                    <h3 style={{ fontSize: "12px", fontWeight: "600", color: colors.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "20px" }}>{section.section}</h3>
+                    <div style={styles.grid2}>
+                      {section.fields.map(field => (
+                        <div key={field.id} style={{ gridColumn: field.type === "textarea" ? "span 2" : "span 1" }}>
+                          <label style={styles.label}>{field.label}</label>
+                          {field.type === "text" && <input type="text" placeholder={field.placeholder} value={qualifierData[field.id] || ""} onChange={e => handleQualifierChange(field.id, e.target.value)} style={styles.input} />}
+                          {field.type === "select" && <select value={qualifierData[field.id] || ""} onChange={e => handleQualifierChange(field.id, e.target.value)} style={styles.select}><option value="">Select...</option>{field.options.map(o => <option key={o} value={o}>{o}</option>)}</select>}
+                          {field.type === "textarea" && <textarea placeholder={field.placeholder} value={qualifierData[field.id] || ""} onChange={e => handleQualifierChange(field.id, e.target.value)} style={styles.textarea} />}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <button style={{ ...styles.button("primary"), padding: "16px 48px", fontSize: "16px", boxShadow: `0 4px 24px ${colors.accent}40` }} onClick={() => { saveQualifier(); navigate("strategy"); }} disabled={!qualifierData.company}><Icons.Sparkles /> Generate Strategy & Proposal</button>
+                </div>
+              </div>
+            </>
+          );
+        }
+        
+        return (
+          <>
+            <div style={styles.header}>
+              <h1 style={styles.headerTitle}>Qualifiers</h1>
+              <div style={styles.headerActions}><button style={styles.button("primary")} onClick={() => navigate("qualifier", "new")}><Icons.Plus /> New Qualifier</button></div>
+            </div>
+            <div style={styles.content}>
+              {qualifiers.length === 0 ? (
+                <div style={{ ...styles.card, textAlign: "center", padding: "60px" }}>
+                  <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
+                  <h2 style={{ fontSize: "18px", fontWeight: "600", color: colors.text, marginBottom: "8px" }}>No Qualifiers Yet</h2>
+                  <p style={{ color: colors.textMuted, marginBottom: "20px" }}>Start by creating your first qualifier after a discovery call.</p>
+                  <button style={styles.button("primary")} onClick={() => navigate("qualifier", "new")}><Icons.Plus /> Create First Qualifier</button>
+                </div>
+              ) : (
+                <div style={styles.card}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead><tr style={{ borderBottom: `1px solid ${colors.border}` }}>
+                      <th style={{ padding: "12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: colors.textMuted, textTransform: "uppercase" }}>Company</th>
+                      <th style={{ padding: "12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: colors.textMuted, textTransform: "uppercase" }}>Category</th>
+                      <th style={{ padding: "12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: colors.textMuted, textTransform: "uppercase" }}>Property</th>
+                      <th style={{ padding: "12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: colors.textMuted, textTransform: "uppercase" }}>Created</th>
+                    </tr></thead>
+                    <tbody>
+                      {qualifiers.map((q, i) => (
+                        <tr key={i} style={{ borderBottom: `1px solid ${colors.borderLight}`, cursor: "pointer" }} onClick={() => { setQualifierData(q); setSelectedPropertyId(q.propertyId || ""); navigate("qualifier", "edit"); }}>
+                          <td style={{ padding: "12px", fontSize: "14px", fontWeight: "500", color: colors.text }}>{q.company || "—"}</td>
+                          <td style={{ padding: "12px", fontSize: "14px", color: colors.textMuted }}>{q.category || "—"}</td>
+                          <td style={{ padding: "12px", fontSize: "14px", color: colors.textMuted }}>{q.propertyId ? PROPERTIES[q.propertyId]?.shortName : "TBD"}</td>
+                          <td style={{ padding: "12px", fontSize: "14px", color: colors.textLight }}>{new Date(q.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        );
+      };
+
+      // ============================================================
+      // RENDER: STRATEGY ENGINE
+      // ============================================================
+      const renderStrategy = () => (
+        <>
+          <div style={styles.header}>
+            <h1 style={styles.headerTitle}>Strategy Engine</h1>
+            <div style={styles.headerActions}>
+              {strategyOutput && <button style={styles.button("secondary")} onClick={generateStrategy} disabled={isGenerating}><Icons.Sparkles /> Regenerate</button>}
+            </div>
+          </div>
+          
+          <div style={styles.content}>
+            {!strategyOutput && !isGenerating && (
+              <div style={{ ...styles.card, textAlign: "center", padding: "60px" }}>
+                <div style={{ fontSize: "48px", marginBottom: "16px" }}>🧠</div>
+                <h2 style={{ fontSize: "18px", fontWeight: "600", color: colors.text, marginBottom: "8px" }}>Ready to Generate Strategy</h2>
+                <p style={{ color: colors.textMuted, marginBottom: "20px" }}>{qualifierData.company ? `Qualifier for ${qualifierData.company} is ready.` : "Complete a qualifier first."}</p>
+                {qualifierData.company ? <button style={styles.button("primary")} onClick={generateStrategy}><Icons.Zap /> Generate Strategy</button> : <button style={styles.button("primary")} onClick={() => navigate("qualifier", "new")}><Icons.Plus /> Start Qualifier</button>}
+              </div>
+            )}
+
+            {isGenerating && !strategyOutput && (
+              <div style={{ ...styles.card, textAlign: "center", padding: "60px" }}>
+                <div style={{ width: "48px", height: "48px", border: `3px solid ${colors.border}`, borderTopColor: colors.accent, borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 20px" }} />
+                <h2 style={{ fontSize: "16px", fontWeight: "600", color: colors.text }}>Generating Strategy...</h2>
+              </div>
+            )}
+
+            {strategyOutput && (
+              <>
+                <div style={styles.card}>
+                  <div style={styles.cardHeader}><h2 style={styles.cardTitle}>🧠 Partnership Strategy</h2>{qualifierData.company && <span style={styles.badge(colors.primary)}>{qualifierData.company}</span>}</div>
+                  <div style={{ fontSize: "14px", lineHeight: "1.7", color: colors.text }} dangerouslySetInnerHTML={{ __html: formatMarkdown(strategyOutput) }} />
+                </div>
+
+                {proposalOutput && (
+                  <div style={styles.card}>
+                    <div style={styles.cardHeader}><h2 style={styles.cardTitle}>📄 Proposal Direction</h2><button style={styles.button("sm")} onClick={generateEmail} disabled={isGenerating}><Icons.Mail /> Generate Email</button></div>
+                    <div style={{ fontSize: "14px", lineHeight: "1.7", color: colors.text }} dangerouslySetInnerHTML={{ __html: formatMarkdown(proposalOutput) }} />
+                  </div>
+                )}
+
+                {emailOutput && (
+                  <div style={styles.card}>
+                    <div style={styles.cardHeader}><h2 style={styles.cardTitle}>✉️ Outreach Email</h2><button style={styles.button("sm")} onClick={() => navigator.clipboard.writeText(emailOutput)}><Icons.Copy /> Copy</button></div>
+                    <div style={{ background: colors.bg, borderRadius: "8px", padding: "20px", fontFamily: "monospace", fontSize: "13px", lineHeight: "1.6", whiteSpace: "pre-wrap", color: colors.text }}>{emailOutput}</div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </>
+      );
+
+      // ============================================================
+      // RENDER: PROPERTIES
+      // ============================================================
+      const renderProperties = () => {
+        const filtered = propertyFilter === "all" ? Object.values(PROPERTIES) : Object.values(PROPERTIES).filter(p => p.tier === parseInt(propertyFilter));
+
+        if (selectedProperty) {
+          const prop = selectedProperty;
+          return (
+            <>
+              <div style={styles.header}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <button style={{ ...styles.button("secondary"), padding: "8px" }} onClick={() => setSelectedProperty(null)}><Icons.ArrowLeft /></button>
+                  <h1 style={styles.headerTitle}>{prop.name}</h1>
+                </div>
+                <button style={styles.button("primary")} onClick={() => { setSelectedPropertyId(prop.id); navigate("qualifier", "new"); }}><Icons.Plus /> Create Qualifier</button>
+              </div>
+              <div style={styles.content}>
+                <div style={styles.card}>
+                  <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", marginBottom: "24px" }}>
+                    <span style={{ fontSize: "48px" }}>{prop.emoji}</span>
+                    <div>
+                      <h2 style={{ fontSize: "24px", fontWeight: "600", color: colors.text, marginBottom: "8px" }}>{prop.name}</h2>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <span style={styles.badge(prop.color)}>{prop.tierName}</span>
+                        <span style={styles.badge(colors.primary)}>{prop.attendees}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ padding: "16px 20px", background: `${prop.color}10`, borderRadius: "10px", borderLeft: `4px solid ${prop.color}`, marginBottom: "24px", fontStyle: "italic", color: colors.text }}>{prop.tagline}</div>
+                  <div style={styles.grid2}>
+                    {[{ label: "Dates", value: prop.dates }, { label: "Market", value: prop.market }, { label: "Format", value: prop.format }, { label: "Pricing", value: prop.inventory }].map(item => (
+                      <div key={item.label} style={{ padding: "16px", background: colors.bg, borderRadius: "8px" }}>
+                        <div style={{ fontSize: "11px", textTransform: "uppercase", color: colors.textLight, marginBottom: "4px" }}>{item.label}</div>
+                        <div style={{ fontSize: "14px", color: colors.text }}>{item.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: "24px" }}>
+                    <h3 style={{ fontSize: "14px", fontWeight: "600", color: colors.text, marginBottom: "12px" }}>Key Inventory</h3>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                      {prop.keyInventory.map(item => <span key={item} style={{ padding: "6px 12px", background: colors.bg, borderRadius: "6px", fontSize: "13px", color: colors.textMuted, border: `1px solid ${colors.border}` }}>{item}</span>)}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "24px", padding: "20px", background: `${colors.accent}10`, borderRadius: "10px", borderLeft: `4px solid ${colors.accent}` }}>
+                    <h3 style={{ fontSize: "12px", fontWeight: "600", color: colors.accent, textTransform: "uppercase", marginBottom: "8px" }}>Why Here</h3>
+                    <p style={{ fontSize: "14px", color: colors.text, lineHeight: "1.6" }}>{prop.whyHere}</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          );
+        }
+
+        return (
+          <>
+            <div style={styles.header}>
+              <h1 style={styles.headerTitle}>Property Library</h1>
+              <div style={styles.headerActions}>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  {[{ val: "all", label: "All" }, ...TIERS.map(t => ({ val: String(t.id), label: `T${t.id}` }))].map(f => (
+                    <button key={f.val} onClick={() => setPropertyFilter(f.val)} style={{ ...styles.button("secondary"), padding: "6px 12px", fontSize: "12px", background: propertyFilter === f.val ? `${colors.accent}15` : colors.bgCard, borderColor: propertyFilter === f.val ? colors.accent : colors.border, color: propertyFilter === f.val ? colors.accent : colors.textMuted }}>{f.label}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div style={styles.content}>
+              <div style={styles.grid3}>
+                {filtered.map(prop => (
+                  <div key={prop.id} style={{ ...styles.card, cursor: "pointer", marginBottom: "0" }} onClick={() => setSelectedProperty(prop)}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                      <span style={{ fontSize: "28px" }}>{prop.emoji}</span>
+                      <span style={styles.badge(prop.color)}>T{prop.tier}</span>
+                    </div>
+                    <h3 style={{ fontSize: "15px", fontWeight: "600", color: colors.text, marginBottom: "4px" }}>{prop.name}</h3>
+                    <p style={{ fontSize: "13px", color: colors.textMuted, marginBottom: "12px" }}>{prop.market}</p>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "14px", fontWeight: "600", color: prop.color }}>{prop.attendees}</span>
+                      <Icons.ChevronRight />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+      };
+
+      // ============================================================
+      // RENDER: PLAYBOOKS
+      // ============================================================
+      const renderPlaybooks = () => {
+        const playbook = PLAYBOOKS[selectedPlaybook];
+        return (
+          <>
+            <div style={styles.header}><h1 style={styles.headerTitle}>Playbooks & Ethos</h1></div>
+            <div style={styles.content}>
+              <div style={{ display: "flex", gap: "8px", marginBottom: "24px", flexWrap: "wrap" }}>
+                {Object.entries(PLAYBOOKS).map(([key, pb]) => (
+                  <button key={key} onClick={() => setSelectedPlaybook(key)} style={{ ...styles.button("secondary"), background: selectedPlaybook === key ? `${pb.color}15` : colors.bgCard, borderColor: selectedPlaybook === key ? pb.color : colors.border, color: selectedPlaybook === key ? pb.color : colors.textMuted }}><span style={{ marginRight: "6px" }}>{pb.icon}</span>{pb.title}</button>
+                ))}
+              </div>
+              <div style={styles.card}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+                  <span style={{ fontSize: "32px" }}>{playbook.icon}</span>
+                  <div><h2 style={{ fontSize: "20px", fontWeight: "600", color: colors.text }}>{playbook.title}</h2><p style={{ fontSize: "13px", color: colors.textMuted }}>Best practices and strategic guidance</p></div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {playbook.cards.map((card, i) => (
+                    <div key={i} style={{ padding: "20px", background: colors.bg, borderRadius: "10px", borderLeft: `4px solid ${playbook.color}` }}>
+                      <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                        <span style={{ fontSize: "24px" }}>{card.icon}</span>
+                        <div><h3 style={{ fontSize: "14px", fontWeight: "600", color: playbook.color, marginBottom: "8px" }}>{card.title}</h3><p style={{ fontSize: "14px", color: colors.text, lineHeight: "1.6" }}>{card.content}</p></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      };
+
+      // ============================================================
+      // RENDER: OTHER PAGES
+      // ============================================================
+      const renderProposals = () => (
+        <><div style={styles.header}><h1 style={styles.headerTitle}>Proposals</h1></div>
+        <div style={styles.content}><div style={{ ...styles.card, textAlign: "center", padding: "60px" }}><div style={{ fontSize: "48px", marginBottom: "16px" }}>📄</div><h2 style={{ fontSize: "18px", fontWeight: "600", color: colors.text, marginBottom: "8px" }}>Proposal Library</h2><p style={{ color: colors.textMuted, marginBottom: "20px" }}>Generated proposals will be saved here.</p>{strategyOutput ? <button style={styles.button("primary")} onClick={() => navigate("strategy")}>View Current Proposal</button> : <button style={styles.button("primary")} onClick={() => navigate("qualifier", "new")}><Icons.Plus /> Start New Qualifier</button>}</div></div></>
+      );
+
+      const renderAdmin = () => (
+        <><div style={styles.header}><h1 style={styles.headerTitle}>Admin</h1></div>
+        <div style={styles.content}><div style={styles.grid2}>
+          <div style={styles.card}><h3 style={styles.cardTitle}>👥 User Management</h3><p style={{ color: colors.textMuted, fontSize: "14px", marginTop: "8px" }}>Manage team members and permissions.</p></div>
+          <div style={styles.card}><h3 style={styles.cardTitle}>🏢 Property Settings</h3><p style={{ color: colors.textMuted, fontSize: "14px", marginTop: "8px" }}>Update property details and pricing.</p></div>
+          <div style={styles.card}><h3 style={styles.cardTitle}>⚙️ Template Settings</h3><p style={{ color: colors.textMuted, fontSize: "14px", marginTop: "8px" }}>Configure strategy templates.</p></div>
+          <div style={styles.card}><h3 style={styles.cardTitle}>📊 Reports</h3><p style={{ color: colors.textMuted, fontSize: "14px", marginTop: "8px" }}>Export pipeline reports.</p></div>
+        </div></div></>
+      );
+
+      // ============================================================
+      // RENDER: ONBOARDING MODAL
+      // ============================================================
+      const renderOnboarding = () => {
+        if (!showOnboarding) return null;
+        return (
+          <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+            <div style={{ background: colors.bgCard, borderRadius: "16px", padding: "32px", maxWidth: "520px", width: "90%", position: "relative" }}>
+              <button onClick={() => setShowOnboarding(false)} style={{ position: "absolute", top: "16px", right: "16px", background: "none", border: "none", cursor: "pointer", color: colors.textMuted }}><Icons.X /></button>
+              <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                <div style={{ width: "64px", height: "64px", borderRadius: "16px", background: `linear-gradient(135deg, ${colors.accent}, ${colors.primary})`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: "28px", color: "#fff", fontWeight: "800" }}>a21</div>
+                <h2 style={{ fontSize: "22px", fontWeight: "600", color: colors.text, marginBottom: "8px" }}>Welcome to the Partnerships Platform</h2>
+                <p style={{ color: colors.textMuted, fontSize: "15px", lineHeight: "1.6" }}>Your command center for turning discovery calls into closed deals.</p>
+              </div>
+              <div style={{ background: colors.bg, borderRadius: "12px", padding: "20px", marginBottom: "24px" }}>
+                <h3 style={{ fontSize: "13px", fontWeight: "600", color: colors.accent, textTransform: "uppercase", marginBottom: "16px" }}>Quick Start Guide</h3>
+                {[
+                  { num: "1", text: "Start a Qualifier after every discovery call" },
+                  { num: "2", text: "Select a property or let the system recommend" },
+                  { num: "3", text: "Generate Strategy for activation concepts" },
+                  { num: "4", text: "Review Proposal Direction for pitch hooks" },
+                ].map(step => (
+                  <div key={step.num} style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+                    <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: colors.accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "600" }}>{step.num}</div>
+                    <span style={{ fontSize: "14px", color: colors.text }}>{step.text}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setShowOnboarding(false)} style={{ ...styles.button("primary"), width: "100%", justifyContent: "center", padding: "14px 24px" }}><Icons.Zap /> Get Started</button>
+            </div>
+          </div>
+        );
+      };
+
+      // ============================================================
+      // MAIN RENDER
+      // ============================================================
+      return (
+        <div style={styles.app}>
+          {renderSidebar()}
+          <main style={styles.main}>
+            {currentPage === "dashboard" && renderDashboard()}
+            {currentPage === "qualifier" && renderQualifier()}
+            {currentPage === "strategy" && renderStrategy()}
+            {currentPage === "proposals" && renderProposals()}
+            {currentPage === "properties" && renderProperties()}
+            {currentPage === "playbooks" && renderPlaybooks()}
+            {currentPage === "admin" && renderAdmin()}
+          </main>
+          {renderOnboarding()}
+        </div>
+      );
+    }
+
+    // Render the app
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<A21Platform />);
+  </script>
+</body>
+</html>
